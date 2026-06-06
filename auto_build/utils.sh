@@ -18,7 +18,7 @@ function prepend_to_path () {
 # See docs/building_asp.rst for more details.
 #if [ "$(uname -s)" = "Linux" ]; then
 export isisEnv=$(ls -d $HOME/*conda3/envs/asp_deps | head -n 1)
-export pythonEnv=$(ls -d $HOME/*conda3/envs/python_isis9 | head -n 1)
+export pythonEnv=$(ls -d $HOME/*conda3/envs/python_isis10 | head -n 1)
 #fi
 
 prepend_to_path $isisEnv/bin
