@@ -243,6 +243,8 @@ if [ "$buildPlatform" = "cloudMacX64" ]; then
   build_cloud_macos build_test_mac_x64
 elif [ "$buildPlatform" = "cloudMacArm64" ]; then
   build_cloud_macos build_test_mac_arm64
+elif [ "$buildPlatform" = "cloudLinuxArm64" ]; then
+  build_cloud_macos build_test_linux_arm
 else
   build_local_linux
 fi
