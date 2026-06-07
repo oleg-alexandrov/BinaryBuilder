@@ -46,7 +46,10 @@ isis_version() {
 
 # Keep this in sync with the function in funcs.sh
 libc_version() {
-    local locations="/lib/x86_64-linux-gnu/libc.so.6 /lib/i386-linux-gnu/libc.so.6 /lib/i686-linux-gnu/libc.so.6 /lib/libc.so.6 /lib64/libc.so.6 /lib32/libc.so.6"
+    # Use the actual machine triplet so aarch64 (and others) find libc, not just
+    # x86_64. On aarch64 libc is in /lib/aarch64-linux-gnu or /usr/lib/aarch64-linux-gnu.
+    local mach="$(uname -m)"
+    local locations="/lib/${mach}-linux-gnu/libc.so.6 /usr/lib/${mach}-linux-gnu/libc.so.6 /lib/x86_64-linux-gnu/libc.so.6 /lib/i386-linux-gnu/libc.so.6 /lib/i686-linux-gnu/libc.so.6 /lib/libc.so.6 /lib64/libc.so.6 /lib32/libc.so.6"
     for library in $locations; do
         if [ -e $library ]; then
             local version="$($library | head -1 | sed 's/[^0-9.]*\([0-9.]*\).*/\1/' )"
