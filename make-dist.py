@@ -9,7 +9,7 @@ if sys.version_info < (2, 6, 1):
 
 from BinaryDist import grep, DistManager, DistPrefix, run
 
-import logging, copy, re, os
+import logging, copy, re, os, platform
 import os.path as P
 from optparse import OptionParser
 from BinaryBuilder import die, program_exists
@@ -136,7 +136,9 @@ def isis_version(isisroot):
     return ".".join(version[0:3])
 
 def libc_version():
-    locations=['/lib/x86_64-linux-gnu/libc.so.6', '/lib/i386-linux-gnu/libc.so.6',
+    mach = platform.machine()  # x86_64, aarch64, ...
+    locations=['/lib/%s-linux-gnu/libc.so.6' % mach, '/usr/lib/%s-linux-gnu/libc.so.6' % mach,
+               '/lib/x86_64-linux-gnu/libc.so.6', '/lib/i386-linux-gnu/libc.so.6',
                '/lib/i686-linux-gnu/libc.so.6', '/lib/libc.so.6', '/lib64/libc.so.6', '/lib32/libc.so.6']
     for library in locations:
         if P.isfile(library):
@@ -217,12 +219,17 @@ if __name__ == '__main__':
     mgr = DistManager(wrapper_file, INSTALLDIR, opt.asp_deps_dir)
     
     try:
-        SEARCHPATH = [INSTALLDIR.lib(), 
+        # Use the actual machine triplet (x86_64 or aarch64) so libm/libc and the
+        # conda sysroot are found on both. On aarch64 the system libs live in
+        # /usr/lib/aarch64-linux-gnu and /lib/aarch64-linux-gnu.
+        mach = platform.machine()
+        SEARCHPATH = [INSTALLDIR.lib(),
                       opt.asp_deps_dir + '/lib',
                       opt.asp_deps_dir + '/lib/csmplugins',
-                      opt.asp_deps_dir + '/x86_64-conda-linux-gnu/sysroot/usr/lib64',
+                      opt.asp_deps_dir + '/' + mach + '-conda-linux-gnu/sysroot/usr/lib64',
                       opt.asp_deps_dir + '/lib/pulseaudio',
-                      '/usr/lib/x86_64-linux-gnu', '/usr/lib', '/opt/X11/lib']
+                      '/usr/lib/' + mach + '-linux-gnu', '/lib/' + mach + '-linux-gnu',
+                      '/usr/lib', '/opt/X11/lib']
         print('Search path = ' + str(SEARCHPATH))
 
         if get_platform().os == 'linux':
