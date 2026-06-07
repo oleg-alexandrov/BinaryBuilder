@@ -67,6 +67,8 @@ def get_platform(pkg=None):
 
     if system == 'Linux' and machine == 'x86_64':
         return p('linux', 64, 'linux64', system, machine, 'Linux', name, ver)
+    elif system == 'Linux' and machine == 'aarch64':
+        return p('linux', 64, 'linux_arm64', system, machine, 'Linux', name, ver)
     elif system == 'Linux' and machine == 'i686':
         return p('linux', 32, 'linux32', system, machine, 'Linux', name, ver)
     elif system == 'Darwin' and machine == 'i386':
