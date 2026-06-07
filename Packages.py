@@ -626,20 +626,17 @@ class stereopipeline(GITPackage, CMakePackage):
     src     = 'https://github.com/NeoGeographyToolkit/StereoPipeline.git'
     def configure(self):
 
-        ## Skip config in fast mode if config file exists
-        #config_file = P.join(self.workdir, 'config.options')
-        #if self.fast and os.path.isfile(config_file): return
-
-        #self.helper('./autogen')
-
         asp_deps_dir = self.env['ASP_DEPS_DIR']
         boost_dir = P.join(asp_deps_dir,'include')
 
-        # TODO: Just remove the bad arguments!
         if self.arch.os == 'osx':
             self.env['LDFLAGS'] = '-Wl,-headerpad_max_install_names'
         else:
-            self.env['LDFLAGS'] += ' -Wl,-O1 -Wl,--enable-new-dtags -Wl,--hash-style=both -m64'
+            # --allow-shlib-undefined: conda ISIS doesn't export all symbols
+            # ASP references (e.g. Isis::FileName::expanded). The tarball
+            # resolves them at runtime via LD_LIBRARY_PATH. -lfmt needed for
+            # spdlog/usgscsm header compatibility.
+            self.env['LDFLAGS'] += ' -Wl,-O1 -Wl,--enable-new-dtags -Wl,--hash-style=both -m64 -Wl,--allow-shlib-undefined -lfmt -lm'
 
         #use_env_flags = False # TODO: What is this?
         prefix        = self.env['INSTALL_DIR']
