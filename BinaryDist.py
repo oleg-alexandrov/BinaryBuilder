@@ -196,17 +196,44 @@ def doctest_on(os):
         return inner
     return outer
 
+def is_asp_or_vw_lib(filename):
+    '''True for our own libraries (libAsp*, libVw*). These are the only ones
+       worth stripping: the conda dependencies are already stripped, and
+       stripping them has crashed them on Linux. On macOS, stripping a file we
+       do not own also needlessly breaks its code signature.'''
+    base = P.basename(filename)
+    return base.startswith('libAsp') or base.startswith('libVw')
+
+def codesign_adhoc(filename):
+    '''Re-sign a Mach-O ad-hoc. strip (and install_name_tool) invalidate the
+       signature, and newer macOS refuses to load an unsigned/invalid Mach-O.
+       This matches how conda ships its binaries (all ad-hoc signed). Use the
+       absolute path to the system tool, as a conda codesign may shadow it.'''
+    run('/usr/bin/codesign', '--force', '--sign', '-', filename,
+        raise_on_failure = False)
+
 def default_baker(filename, distdir, searchpath):
-    '''Updates a files rpath to be relative to distdir and strips it of symbols'''
+    '''Updates a file's rpath to be relative to distdir, strips our own
+       libraries, and re-signs Mach-O files on macOS.'''
     if is_ascii(filename):
         fix_paths(filename)
         return
-    if is_lib_or_bin_prog(filename):
-        set_rpath(filename, distdir, searchpath)
+    if not is_lib_or_bin_prog(filename):
+        return
+    set_rpath(filename, distdir, searchpath)
 
-    # On linux stripping causes the conda libraries to crash
-    if get_platform().os != 'linux':
+    # Strip only our own libraries (libAsp*, libVw*). See is_asp_or_vw_lib.
+    # This also lets us strip on Linux now, since we no longer touch the conda
+    # libraries (stripping those has crashed them there).
+    if is_asp_or_vw_lib(filename):
         strip(filename)
+
+    # On macOS, re-sign ad-hoc. strip invalidates our libs' signatures, and
+    # some conda dependencies arrive with an already-invalid signature; newer
+    # macOS refuses to load either. Re-signing is idempotent and matches how
+    # conda ships its binaries. ELF has no signing, so this is a no-op on Linux.
+    if get_platform().os == 'osx':
+        codesign_adhoc(filename)
 
 def which(program):
     '''Find if a program is in the PATH'''
