@@ -207,10 +207,17 @@ def is_asp_or_vw_lib(filename):
 def codesign_adhoc(filename):
     '''Re-sign a Mach-O ad-hoc. strip (and install_name_tool) invalidate the
        signature, and newer macOS refuses to load an unsigned/invalid Mach-O.
-       This matches how conda ships its binaries (all ad-hoc signed). Use the
-       absolute path to the system tool, as a conda codesign may shadow it.'''
-    run('/usr/bin/codesign', '--force', '--sign', '-', filename,
-        raise_on_failure = False)
+       This matches how conda ships its binaries (all ad-hoc signed).
+
+       Prefer the system codesign at /usr/bin/codesign rather than a PATH
+       lookup: a conda environment (which make-dist activates) puts its own
+       codesign earlier on PATH, and that one errors with "--sign is required".
+       /usr/bin/codesign ships with macOS and is present on CI runners too.
+       Fall back to a PATH lookup only if the system tool is ever absent.'''
+    tool = '/usr/bin/codesign'
+    if not os.path.exists(tool):
+        tool = 'codesign'
+    run(tool, '--force', '--sign', '-', filename, raise_on_failure = False)
 
 def default_baker(filename, distdir, searchpath):
     '''Updates a file's rpath to be relative to distdir, strips our own
