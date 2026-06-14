@@ -303,9 +303,16 @@ if __name__ == '__main__':
 
         print('Adding libraries')
         found_set = set()
-        for i in range(2,10):
+        # Resolve dependencies to a fixpoint: keep adding the dependencies of
+        # the libraries already added until a pass finds nothing new. Cap the
+        # number of passes to avoid an infinite loop. The cap is only a runaway
+        # guard; the loop breaks as soon as it converges (around 10 passes for
+        # the current stack), so the extra headroom costs nothing.
+        max_passes = 20
+        for i in range(1, max_passes + 1):
             print('\tPass %i to get dependencies of libraries' % i)
             sys.stdout.flush()
+            prev_count = len(found_set)
             deplist_copy = copy.deepcopy(mgr.deplist)
 
             # Force the use of these files
@@ -325,6 +332,14 @@ if __name__ == '__main__':
                         found_set.add(lib)
                         mgr.add_library(lib_path)
                         continue
+
+            # Stop once a pass discovers no new library (fixpoint reached).
+            if len(found_set) == prev_count:
+                print('\tConverged after pass %i' % i)
+                break
+        else:
+            print('\tWarning: reached the %i-pass limit without converging'
+                  % max_passes)
                     
         # Handle the shiplist separately. This will also add more dependencies
         print('\tAdding forced-ship libraries')
