@@ -14,6 +14,8 @@ bin/dem_mosaic
 bin/dg_mosaic
 bin/disparitydebug
 bin/*gdal*
+bin/ogrinfo
+bin/ogr2ogr
 bin/smoothe_mesh
 bin/fill_holes
 bin/simplify_mesh
