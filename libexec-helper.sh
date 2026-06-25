@@ -56,13 +56,18 @@ if [ "$(echo $PROGRAM | grep sparse_disp)" != "" ] &&
     # Careful with spaces in $ASP_PYTHON_MODULES_PATH
     dir1=$(dirname "$ASP_PYTHON_MODULES_PATH");  dir2=$(dirname "$dir1"); dir3=$(dirname "$dir2")
     export PATH="$dir3/bin":"$PATH"
+    # Point GDAL and PROJ at this environment's data, otherwise gdal cannot
+    # find proj.db and georeferencing operations fail.
+    export GDAL_DATA="$dir3/share/gdal"
+    export PROJ_LIB="$dir3/share/proj"  # old api
+    export PROJ_DATA="$dir3/share/proj" # new api
     case $(uname -s) in
         Linux)
-        export LD_LIBRARY_PATH="$ASP_PYTHON_MODULES_PATH"
+        export LD_LIBRARY_PATH="$dir3/lib"
         ;;
         Darwin)
-        export DYLD_FALLBACK_LIBRARY_PATH="$ASP_PYTHON_MODULES_PATH"
-        export DYLD_FALLBACK_FRAMEWORK_PATH="$ASP_PYTHON_MODULES_PATH"
+        export DYLD_FALLBACK_LIBRARY_PATH="$dir3/lib"
+        export DYLD_FALLBACK_FRAMEWORK_PATH="$dir3/lib"
         ;;
         *)
         die "Unknown OS: $(uname -s)"
