@@ -45,7 +45,7 @@ export TCL_LIBRARY="$TCL_LIBRARY"
 PROGRAM="${LIBEXEC}/${EXEC_NAME}"
 
 # Path to USGS CSM plugins
-export CSM_PLUGIN_PATH="${TOPLEVEL}/plugins/usgscsm"
+export CSM_PLUGIN_PATH="${TOPLEVEL}/lib/csmplugins"
 
 if [ "$(echo $PROGRAM | grep sparse_disp)" != "" ] &&
     [ "$ASP_PYTHON_MODULES_PATH" != "" ]; then

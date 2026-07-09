@@ -81,7 +81,8 @@ check_libc() {
 }
 
 set_lib_paths() {
-    local add_paths="$ISISROOT/lib:$ISISROOT/3rdParty/lib:${1}"
+    # Add the CSM plugin dir: libusgscsm ships in lib/csmplugins, not lib/.
+    local add_paths="$ISISROOT/lib:$ISISROOT/3rdParty/lib:${1}:${TOPLEVEL}/lib/csmplugins"
 
     # PROJ and GDAL
     export PROJ_LIB="${TOPLEVEL}/share/proj" # old api

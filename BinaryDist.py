@@ -353,7 +353,9 @@ class DistManager(object):
             # don't preserve the subdirs underneath 'lib'. This make
             # later rpath code easier to understand.
             lib = P.normpath(p).split('/')[-1]
-            if not is_plugin:
+            # Keep libusgscsm in its lib/csmplugins location, not flattened to lib/.
+            lib_is_plugin = is_plugin or lib.startswith('libusgscsm')
+            if not lib_is_plugin:
                 self._add_file(p, self.distdir.lib(lib), add_deps=add_deps)
             else:
                 self._add_file(p, usgscsm_plugin_path(self.distdir, lib), add_deps=add_deps)
@@ -824,8 +826,9 @@ class DistPrefix(str):
         return f
 
 def usgscsm_plugin_path(distdir, base):
-    '''Return the full path to a given USGS CSM plugin.'''
-    out_path = P.join(distdir, 'plugins', 'usgscsm', base)
+    '''Return the full path to a given USGS CSM plugin, in the lib/csmplugins
+       location as installed by the usgscsm package.'''
+    out_path = P.join(distdir, 'lib', 'csmplugins', base)
     return out_path
 
 def rm_f(filename):
