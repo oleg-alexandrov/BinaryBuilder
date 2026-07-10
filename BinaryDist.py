@@ -971,7 +971,8 @@ def set_rpath(filename, toplevel, searchpath, relative_name=True):
     if get_platform().os == 'linux':
         rel_to_top = P.relpath(toplevel, P.dirname(filename))
         #small_path = searchpath[0:1] # truncate this as it can't fit
-        rpath = '$ORIGIN/../lib'
+        # Add the csm plugin path
+        rpath = '$ORIGIN/../lib:$ORIGIN/../lib/csmplugins'
         if run('chrpath', '-r', rpath, filename, raise_on_failure = False) is None:
             # TODO: Apparently patchelf is better than chrpath when the
             # latter fails. Here, can use instead:
