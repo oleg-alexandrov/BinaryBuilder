@@ -69,18 +69,37 @@ build_cloud_macos() {
         fi
     done
     
-    # The cloud directory where the build is stored. Wipe any prior local
-    # version, or else the fetching can fail. This must be in sync
+    # The cloud directory where the build is stored. This must be in sync
     # with StereoPipeline/.github/workflows
     cloudBuildDir=StereoPipeline-Artifact-${workFlow}
-    /bin/rm -rf $cloudBuildDir
 
-    # Fetch the build from the cloud. If it failed,
-    # we will at least have the logs.
-    echo Fetching the build with id $id from the cloud 
+    # Fetch the build from the cloud. Retry a few times. A freshly
+    # completed run can briefly fail to serve its artifact, and the
+    # download also hits occasional transient network errors. A single
+    # silent failure here used to fail the whole platform for the night,
+    # even when the cloud build and tests had passed. The download output
+    # (a progress bar) would mess up the main log, so send it to a per-
+    # platform log file, and print that log on failure so the real cause
+    # is visible instead of swallowed.
+    echo Fetching the build with id $id from the cloud
     echo $gh run download -R $repo $id
-    $gh run download -R $repo $id >/dev/null 2>&1 # this messes up the log
-    
+    downloadLog=$cloudBuildDir.download.log
+    numTries=5
+    attempt=1
+    while [ $attempt -le $numTries ]; do
+        # Wipe any prior partial download, or else the fetch can fail
+        /bin/rm -rf $cloudBuildDir
+        $gh run download -R $repo $id > $downloadLog 2>&1
+        if [ -n "$(ls $cloudBuildDir/StereoPipeline-*.tar.bz2 2>/dev/null)" ]; then
+            echo "Downloaded the cloud build on attempt $attempt of $numTries"
+            break
+        fi
+        echo "Download attempt $attempt of $numTries failed, see $downloadLog:"
+        cat $downloadLog
+        attempt=$((attempt + 1))
+        sleep 30
+    done
+
     if [ "$success" != "success" ]; then
         echo Cloud build failed with status $success
         echo "Fail build_failed" > $HOME/$buildDir/$statusFile
