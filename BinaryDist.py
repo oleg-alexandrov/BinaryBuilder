@@ -325,7 +325,7 @@ class DistManager(object):
         # The tools listed below are the same kind (they run with the user's
         # own python, having dependencies not in ASP's bundled python), so
         # they are exempted too, even without a .py extension.
-        external_python_tools = ["glint_correct"]
+        external_python_tools = ["glint_correct", "dem_detrend"]
         if base.endswith(".py") or base in external_python_tools:
             self._add_file(inpath, self.distdir.bin(base))
         else:

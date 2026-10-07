@@ -84,6 +84,7 @@ bin/bathy_plane_calc
 bin/bathy_threshold_calc.py
 bin/orbit_plot.py
 bin/glint_correct
+bin/dem_detrend
 bin/otsu_threshold
 bin/corr_eval
 bin/disp_avg
