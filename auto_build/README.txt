@@ -28,8 +28,10 @@ Each time the automated builds are started, a fresh copy is fetched not only of
 VisionWorkbench and StereoPipeline, but also of StereoPipelineTest. As such, all
 these repositories must be up-to-date before the builds happen. 
 
-A local copy of BinaryBuilder is used on lunokhod1, and the GitHub copy is used
-in the cloud. These are better kept in sync.
+BinaryBuilder itself is refreshed too: the cron entry on lunokhod1 pulls this
+repo from god/master first, then launches launch_master.sh. So the nightly
+starts by refreshing the repo and only then builds, which avoids packaging from
+a stale local checkout. The cloud uses the GitHub copy directly.
 
 The build process for ASP and dependencies is described in::
 

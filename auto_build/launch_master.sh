@@ -6,6 +6,10 @@
 # The Linux build is built and tested locally. The macOS one is built
 # and tested in the cloud.
 
+# The cron entry refreshes this repo from god/master before invoking this
+# script, so the build always uses the latest whitelist and packaging rules.
+# Without that refresh a stale local checkout silently ships old binaries.
+
 # See auto_build/README.txt for more information.
 
 buildDir=projects/BinaryBuilder     # must be relative to home dir
